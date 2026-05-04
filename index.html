@@ -1,87 +1,129 @@
+{
+  "name": "luna-gold-pusula",
+  "version": "1.0.0",
+  "description": "Kuyumcu Stok ve Cari Takip Sistemi",
+  "main": "src/index.js",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.284.0",
+    "recharts": "^2.8.0",
+    "tailwindcss": "^3.3.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  }
+}
+// Milyem değerleri sabitleri
+export const AYAR_MILYEM = {
+  '14K': 0.585,
+  '18K': 0.750,
+  '22K': 0.916,
+  '24K': 0.995,
+  'HAS': 1.000
+};
+
+// Brüt gramdan Has hesabı
+export const calculateHas = (gram, ayar) => {
+  const katsayi = AYAR_MILYEM[ayar] || 0;
+  return Number((gram * katsayi).toFixed(3));
+};
+
+// Para birimi formatlama (TL)
+export const formatTRY = (val) => {
+  return new Intl.NumberFormat('tr-TR', { 
+    style: 'currency', 
+    currency: 'TRY' 
+  }).format(val);
+};
 import React, { useState } from 'react';
-import { LayoutDashboard, Package, Users, ArrowUpRight, ArrowDownRight, Search } from 'lucide-react';
+import { 
+  LayoutDashboard, Package, Users, Wallet, 
+  TrendingUp, Plus, ChevronRight, Settings
+} from 'lucide-react';
+import { calculateHas, formatTRY } from './utils/goldCalculator';
 
-const LunaApp = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+const App = () => {
+  const [tab, setTab] = useState('dashboard');
+  const [goldPrice] = useState(2510.45); // Örnek canlı kur
 
-  // Örnek Veri Yapısı
-  const stats = [
-    { title: 'Toplam Has Stok', value: '1,450.25 gr', trend: '+2.5%', color: 'text-gold' },
-    { title: 'Kasa (Nakit)', value: '450,000 TL', trend: '+12%', color: 'text-green-500' },
-    { title: 'Müşteri Alacak', value: '120,500 TL', trend: '-5%', color: 'text-red-500' },
-  ];
+  const [items] = useState([
+    { id: 1, ad: 'Luna Baget Yüzük', ayar: '14K', gram: 4.25 },
+    { id: 2, ad: 'Klasik Zincir', ayar: '22K', gram: 12.80 },
+    { id: 3, ad: 'Özel Tasarım Küpe', ayar: '18K', gram: 6.15 }
+  ]);
+
+  const toplamHas = items.reduce((sum, item) => sum + calculateHas(item.gram, item.ayar), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar - Sol Menü */}
-      <div className="w-64 bg-slate-900 text-white p-6">
-        <h1 className="text-2xl font-bold mb-10 text-yellow-500 tracking-widest">LUNA GOLD</h1>
-        <nav className="space-y-4">
-          <button onClick={() => setActiveTab('dashboard')} className={`flex items-center space-x-3 w-full p-3 rounded ${activeTab === 'dashboard' ? 'bg-yellow-600' : 'hover:bg-slate-800'}`}>
-            <LayoutDashboard size={20} /> <span>Pusula Panel</span>
+    <div className="flex min-h-screen bg-slate-50 font-sans">
+      {/* Sidebar */}
+      <div className="w-72 bg-[#0f172a] text-white flex flex-col p-6">
+        <div className="py-8 text-center border-b border-slate-800 mb-8">
+          <h1 className="text-3xl font-black text-yellow-500 tracking-tighter">LUNA</h1>
+          <p className="text-[10px] tracking-[0.4em] text-slate-400 uppercase">Jewelry Management</p>
+        </div>
+        <nav className="flex-1 space-y-2">
+          <button onClick={() => setTab('dashboard')} className={`flex items-center space-x-4 w-full p-4 rounded-2xl ${tab === 'dashboard' ? 'bg-yellow-600' : ''}`}>
+            <LayoutDashboard size={20}/> <span className="font-bold text-sm">Panel</span>
           </button>
-          <button onClick={() => setActiveTab('stok')} className={`flex items-center space-x-3 w-full p-3 rounded ${activeTab === 'stok' ? 'bg-yellow-600' : 'hover:bg-slate-800'}`}>
-            <Package size={20} /> <span>Stok Takibi</span>
-          </button>
-          <button onClick={() => setActiveTab('cari')} className={`flex items-center space-x-3 w-full p-3 rounded ${activeTab === 'cari' ? 'bg-yellow-600' : 'hover:bg-slate-800'}`}>
-            <Users size={20} /> <span>Cari Defter</span>
+          <button onClick={() => setTab('stok')} className={`flex items-center space-x-4 w-full p-4 rounded-2xl ${tab === 'stok' ? 'bg-yellow-600' : ''}`}>
+            <Package size={20}/> <span className="font-bold text-sm">Stok Takibi</span>
           </button>
         </nav>
       </div>
 
-      {/* Ana İçerik Alanı */}
-      <div className="flex-1 p-8">
-        {/* Üst Bar */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-semibold capitalize">{activeTab} Paneli</h2>
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-            <input type="text" placeholder="Ürün, müşteri veya işlem ara..." className="pl-10 pr-4 py-2 border rounded-lg w-72 focus:outline-none focus:ring-2 focus:ring-yellow-500" />
+      {/* Main Content */}
+      <main className="flex-1 p-10">
+        <header className="flex justify-between items-center mb-10">
+          <h2 className="text-3xl font-bold text-slate-900">Pusula Ekranı</h2>
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center">
+             <div className="bg-yellow-50 p-3 rounded-xl text-yellow-600 mr-4"><TrendingUp size={24}/></div>
+             <div><p className="text-[10px] font-bold text-slate-400 uppercase">Has Altın / Gr</p>
+             <p className="text-xl font-mono font-bold text-slate-900">{formatTRY(goldPrice)}</p></div>
           </div>
-        </div>
+        </header>
 
-        {/* İstatistik Kartları */}
-        {activeTab === 'dashboard' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {stats.map((stat, idx) => (
-              <div key={idx} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <p className="text-gray-500 text-sm">{stat.title}</p>
-                <h3 className="text-2xl font-bold mt-2">{stat.value}</h3>
-                <span className={`text-xs font-medium ${stat.trend.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
-                  {stat.trend} geçen aya göre
-                </span>
-              </div>
-            ))}
+        {tab === 'dashboard' ? (
+          <div className="grid grid-cols-3 gap-6">
+            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+              <p className="text-[10px] font-bold text-slate-400 uppercase">Toplam Stok (Has)</p>
+              <h4 className="text-2xl font-black text-slate-900 mt-2">{toplamHas.toFixed(3)} gr</h4>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-[11px] text-slate-400 font-bold uppercase p-5">
+                <tr><th className="p-5">Ürün</th><th className="p-5">Ayar</th><th className="p-5">Brüt Gr</th><th className="p-5">Has</th></tr>
+              </thead>
+              <tbody>
+                {items.map(item => (
+                  <tr key={item.id} className="border-b">
+                    <td className="p-5 font-bold">{item.ad}</td>
+                    <td className="p-5">{item.ayar}</td>
+                    <td className="p-5">{item.gram} gr</td>
+                    <td className="p-5 text-yellow-700 font-bold">{calculateHas(item.gram, item.ayar)} gr</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-
-        {/* Veri Tablosu (Stok/Cari için dinamik) */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="p-4 font-semibold text-gray-600">İşlem/Ürün</th>
-                <th className="p-4 font-semibold text-gray-600">Ayar/Detay</th>
-                <th className="p-4 font-semibold text-gray-600">Miktar (gr)</th>
-                <th className="p-4 font-semibold text-gray-600">Durum</th>
-                <th className="p-4 font-semibold text-gray-600">İşlem</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b hover:bg-gray-50">
-                <td className="p-4 font-medium text-gray-800">14K Altın Kolye (Luna Model)</td>
-                <td className="p-4">14 Ayar - 585 Milyem</td>
-                <td className="p-4">12.45 gr</td>
-                <td className="p-4"><span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Stokta</span></td>
-                <td className="p-4 text-blue-600 cursor-pointer hover:underline">Düzenle</td>
-              </tr>
-              {/* Daha fazla satır buraya eklenebilir */}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };
+export default App;
+# 🧭 LUNA GOLD - Pusula ERP v1.0
 
-export default LunaApp;
+Bu yazılım, kuyumculuk perakende satış mağazaları için stok ve cari takibini sağlar.[span_4](start_span)[span_4](end_span)
+
+## 🚀 Hızlı Kurulum
+1. `npm install`
+2. `npm start`
+
+## 🛠 Özellikler
+- **Milyem Hesaplama:** 14K, 18K, 22K ayarların has karşılığını hesaplar.[span_5](start_span)[span_5](end_span)
+- **Dashboard:** Anlık stok ve finansal durumu gösterir.[span_6](start_span)[span_6](end_span)
